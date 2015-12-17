@@ -1,6 +1,6 @@
-#pragma config(Motor,  port2,           backRightMotor, tmotorVex269_MC29, openLoop)
-#pragma config(Motor,  port3,           frontLeftMotor, tmotorVex269_MC29, openLoop)
-#pragma config(Motor,  port4,           frontRightMotor, tmotorVex269_MC29, openLoop)
+#pragma config(Motor,  port2,           backRightMotor, tmotorVex269_MC29, openLoop, reversed)
+#pragma config(Motor,  port3,           frontRightMotor, tmotorVex269_MC29, openLoop, reversed)
+#pragma config(Motor,  port4,           frontLeftMotor, tmotorVex269_MC29, openLoop)
 #pragma config(Motor,  port5,           backLeftMotor, tmotorVex269_MC29, openLoop)
 #pragma config(Motor,  port6,           rightFlywheel, tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port7,           leftFlywheel,  tmotorVex393_MC29, openLoop)
@@ -21,80 +21,110 @@
 float launcherSpeed = 127;
 bool launcherRunning = false;
 
-void runLauncher(int speed){ //starts flywheels at speed "speed"
-	if(speed > 127)
-		speed = 127;
-	if(speed < 127)
-		speed = -127;
-	motor[rightFlywheel] = speed;
-	motor[leftFlywheel] = speed;
+void runLauncher(){ //starts flywheels at launcherSpeed "launcherSpeed"
+	if(launcherSpeed > 127)
+		launcherSpeed = 127;
+	if(launcherSpeed < -127)
+		launcherSpeed = -127;
+	motor[rightFlywheel] = launcherSpeed;
+	motor[leftFlywheel] = launcherSpeed;
 }
 
-task motor_control{
-	while(true){
-		if((vexRT[Btn5U] == 0) == (vexRT[Btn6U] == 0)){ //normal driving controls
-			motor[frontLeftMotor] = vexRT[Ch2];
-			motor[backRightMotor] = vexRT[Ch2];
-			motor[frontRightMotor] = vexRT[Ch3];
-			motor[backLeftMotor] = vexRT[Ch3];
-			} else if(vexRT[Btn5U] == 1) { //rotate left (right?)
-			motor[frontLeftMotor] = 127;
-			motor[backRightMotor] = 127;
-			motor[frontRightMotor] = 127;
-			motor[backLeftMotor] = 127;
-			wait1Msec(40);
-			} else{ //rotate right (left?)
-			motor[frontLeftMotor] = -127;
-			motor[backRightMotor] = -127;
-			motor[frontRightMotor] = -127;
-			motor[backLeftMotor] = -127;
-			wait1Msec(40);
-		}
-		wait1Msec(10);
-		EndTimeSlice();
-	}
+void stopLauncher(){
+	motor[rightFlywheel] = 0;
+	motor[leftFlywheel] = 0;
 }
 
 task launcher_toggle_listener(){ //controls flywheels
 	while(true){
-		if(vexRT[btn8D] == 1  && !launcherRunning) {
-			runLauncher(launcherSpeed);
+		if(vexRT[Btn8D] == 1  && !launcherRunning) {
+			runLauncher();
 			launcherRunning = !launcherRunning;
-			} else if(vexRT[btn8D] == 1 && launcherRunning){
-			runLauncher(0);
+			while(vexRT[Btn8D] == 1)
+				wait1Msec(50);
+			} else if(vexRT[Btn8D] == 1 && launcherRunning){
+			stopLauncher();
 			launcherRunning = !launcherRunning;
+			while(vexRT[Btn8D] == 1)
+				wait1Msec(50);
 		}
-		while(vexRT[btn8D] == 1)
-			wait1Msec(50);
-		wait1Msec(50);
-		EndTimeSlice();
-	}
+	}//end of while loop
 }
 
-task launcher_speed_control(){ //changes speed of flywheels
+task launcher_speed_control(){ //changes launcherSpeed of flywheels
 	while(true){
 		if(vexRT[Btn8L] == 1 && vexRT[Btn8R] == 0){
 			launcherSpeed -= 12.7;
+			while(vexRT[Btn8L] == 1)
+				wait1Msec(25);
 			} else if(vexRT[Btn8L] == 0 && vexRT[Btn8R] == 1){
 			launcherSpeed += 12.7;
+			while(vexRT[Btn8R] == 1)
+				wait1Msec(25);
 		}
 		if(launcherRunning)
-			runLauncher(launcherSpeed);
-		while(vexRT[Btn8L] == 1 || vexRT[Btn8R] == 1)
-			wait1Msec(50);
+			runLauncher();
 		wait1Msec(50);
-		EndTimeSlice();
-	}
+	}//end of while loop
 }
+
+task motor_control{
+	while(true){
+		if((vexRT[Btn5U] == 0) == (vexRT[Btn6U] == 0) && (vexRT[Btn5D] == 0) == (vexRT[Btn6D] == 0)){ //normal driving controls
+			motor[frontLeftMotor] = vexRT[Ch2];
+			motor[backRightMotor] = vexRT[Ch2];
+			motor[frontRightMotor] = vexRT[Ch3];
+			motor[backLeftMotor] = vexRT[Ch3];
+			} else if(vexRT[Btn6U] == 1) { //rotate left
+			motor[frontLeftMotor] = 127;
+			motor[backRightMotor] = -127;
+			motor[frontRightMotor] = -127;
+			motor[backLeftMotor] = 127;
+			wait1Msec(40);
+			} else if(vexRT[Btn5U] == 1){ //rotate right
+			motor[frontLeftMotor] = -127;
+			motor[backRightMotor] = 127;
+			motor[frontRightMotor] = 127;
+			motor[backLeftMotor] = -127;
+			wait1Msec(40);
+			} else if(vexRT[Btn5D] == 1){ //half speed right rotate
+			motor[frontLeftMotor] = -63;
+			motor[backRightMotor] = 63;
+			motor[frontRightMotor] = 63;
+			motor[backLeftMotor] = -63;
+			wait1Msec(40);
+			} else {//half speed left rotate
+			motor[frontLeftMotor] = 63;
+			motor[backRightMotor] = -63;
+			motor[frontRightMotor] = -63;
+			motor[backLeftMotor] = 63;
+			wait1Msec(40);
+		}
+		wait1Msec(10);
+		EndTimeSlice();
+	}//end of while loop
+}
+
 
 task intake_control(){ //controls intakes
 	while(true){
 		if(vexRT[Btn7U] == 1){
 			motor[intakeMotor] = 127;
+			while(vexRT[Btn7U] == 1)
+				wait1Msec(50);
+			while(vexRT[Btn7U] == 0)
+				wait1Msec(50);
+			motor[intakeMotor] = 0;
 			} else if(vexRT[Btn7D] == 1){
 			motor[intakeMotor] = -127;
+			while(vexRT[Btn7D]== 1)
+				wait1Msec(50);
+			while(vexRT[Btn7D]== 0)
+				wait1Msec(50);
+			motor[intakeMotor] = 0;
 			} else{
 			motor[intakeMotor] = 0; }
+
 		wait1Msec(50);
 		EndTimeSlice();
 	}
@@ -138,13 +168,14 @@ task autonomous()
 	// .....................................................................................
 	// Insert user code here.
 	// .....................................................................................
-	runLauncher(127);
+	launcherSpeed = 127;
+	runLauncher();
 	launcherRunning = true;
 	wait(3);
 	motor[intakeMotor] = 50;
 	wait(10);
 	motor[intakeMotor] = 0;
-	runLauncher(0);
+	stopLauncher();
 	launcherRunning = false;
 }
 
