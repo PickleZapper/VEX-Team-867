@@ -12,7 +12,7 @@ bool launcherRunning = false;
 void runLauncher(int speed){ //starts flywheels at speed "speed"
 	if(speed > 127)
 		speed = 127;
-	if(speed < 127)
+	if(speed < -127)
 		speed = -127;
 	motor[rightFlywheel] = speed;
 	motor[leftFlywheel] = speed;
@@ -23,16 +23,21 @@ task launcher_toggle_listener(){ //controls flywheels
 		if(SensorValue[button] == 1  && !launcherRunning) {
 			runLauncher(launcherSpeed);
 			launcherRunning = !launcherRunning;
+			while(SensorValue[button] == 1){
+				wait1Msec(50); }
 			} else if(SensorValue[button] == 1 && launcherRunning){
 			runLauncher(0);
 			launcherRunning = !launcherRunning;
+			while(SensorValue[button] == 1){
+				wait1Msec(50); }
 		}
-		while(SensorValue[button] == 1){
-			wait1Msec(50); }
+
 	}
 }
 
-
+task beep_boop(){
+	runLauncher(50)
+}
 
 task main()
 {
