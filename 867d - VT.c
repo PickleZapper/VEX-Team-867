@@ -81,7 +81,7 @@ task launcher_speed_control(){ //changes speed of flywheels
 		if(launcherRunning)
 			runLauncher(launcherSpeed);
 		while(vexRT[Btn8L] == 1 || vexRT[Btn8R] == 1)
-			wait1Msec(20);
+			wait1Msec(50);
 		wait1Msec(50);
 		EndTimeSlice();
 	}
