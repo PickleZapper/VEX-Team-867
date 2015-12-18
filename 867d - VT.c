@@ -70,7 +70,7 @@ task launcher_speed_control(){ //changes launcherSpeed of flywheels
 
 task motor_control{
 	while(true){
-		if((vexRT[Btn5U] == 0) == (vexRT[Btn6U] == 0) || (vexRT[Btn5D] == 0) == (vexRT[Btn6D] == 0)){ //normal driving controls
+		if((vexRT[Btn5U] == 0) == (vexRT[Btn6U] == 0) && (vexRT[Btn5D] == 0) == (vexRT[Btn6D] == 0)){ //normal driving controls
 			motor[frontLeftMotor] = vexRT[Ch2];
 			motor[backRightMotor] = vexRT[Ch2];
 			motor[frontRightMotor] = vexRT[Ch3];
@@ -88,16 +88,16 @@ task motor_control{
 			motor[backLeftMotor] = -127;
 			wait1Msec(40);
 			} else if(vexRT[Btn5D] == 1){ //half speed right rotate
-			motor[frontLeftMotor] = -63;
-			motor[backRightMotor] = 63;
-			motor[frontRightMotor] = 63;
-			motor[backLeftMotor] = -63;
+			motor[frontLeftMotor] = -40;
+			motor[backRightMotor] =40;
+			motor[frontRightMotor] =40;
+			motor[backLeftMotor] = -40;
 			wait1Msec(40);
 			} else {//half speed left rotate
-			motor[frontLeftMotor] = 63;
-			motor[backRightMotor] = -63;
-			motor[frontRightMotor] = -63;
-			motor[backLeftMotor] = 63;
+			motor[frontLeftMotor] =40;
+			motor[backRightMotor] = -40;
+			motor[frontRightMotor] = -40;
+			motor[backLeftMotor] =40;
 			wait1Msec(40);
 		}
 		wait1Msec(10);
@@ -121,6 +121,8 @@ task intake_control(){ //controls intakes
 				wait1Msec(50);
 		}
 		motor[intakeMotor] = 0;
+		while(vexRT[Btn7U] == 1 || vexRT[Btn7D] == 1)
+			wait1Msec(50);
 		wait1Msec(50);
 	}
 }
